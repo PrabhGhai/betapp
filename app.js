@@ -10,7 +10,12 @@ require("./conn/conn");
 app.use(express.json());
 app.use(cookieParser());
 app.use("/uploads", express.static("uploads"));
-app.use(cors({ origin: ["http://localhost:5173"], credentials: true }));
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://betwebapp.netlify.app"],
+    credentials: true,
+  })
+);
 
 //api calling
 app.use("/api/v1", userApi);
