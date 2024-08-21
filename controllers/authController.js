@@ -145,6 +145,9 @@ exports.login = async (req, res) => {
 exports.logout = (req, res) => {
   res.clearCookie("betAppUserToken", {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production", // Match the secure flag based on the environment
+    sameSite: "None", // Match the SameSite attribute
+    path: "/", // Specify the path if necessary
   });
   res.json({ message: "Logged out successfully" });
 };

@@ -7,20 +7,31 @@ const cookieParser = require("cookie-parser");
 
 require("dotenv").config();
 require("./conn/conn");
+
 app.use(express.json());
 app.use(cookieParser());
-app.use("/uploads", express.static("uploads"));
+
+// Configure CORS with expanded settings
 app.use(
   cors({
     origin: ["http://localhost:5173", "https://betwebapp.netlify.app"],
-    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Specify allowed methods
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"], // Specify allowed headers
+    credentials: true, // Allow cookies to be sent
   })
 );
 
-//api calling
+// Serve static files if needed
+// app.use("/uploads", express.static("uploads"));
+
+// API routes
 app.use("/api/v1", userApi);
 app.use("/api/v1", adminApi);
-//port no.
+
+// Handle preflight requests
+app.options("*", cors());
+
+// Start the server
 app.listen(process.env.PORT, () => {
-  console.log("Server started");
+  console.log("Server started on port", process.env.PORT);
 });
