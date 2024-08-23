@@ -24,14 +24,16 @@ exports.adminLogin = async (req, res) => {
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       {
-        expiresIn: "1h",
+        expiresIn: "24h", // Token expires in 24 hours
       }
     );
 
     // Set token in cookies
     res.cookie("betAppUserToken", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000, // 24 hours
+      secure: process.env.NODE_ENV === "production", // Cookie is only sent over HTTPS in production
+      sameSite: "None",
     });
 
     res.json({ message: "Login successful." });
@@ -72,19 +74,6 @@ exports.getUsersInChunks = async (req, res) => {
       totalPages: Math.ceil(totalUsers / limit),
       users,
     });
-  } catch (error) {
-    res.status(500).json({ message: "Server error" });
-  }
-};
-
-//fetch recent users
-exports.getRecentUsers = async (req, res) => {
-  try {
-    const recentUsers = await User.find()
-      .sort({ createdAt: -1 }) // Sort by creation date in descending order (most recent first)
-      .limit(10); // Limit to 10 most recent users
-
-    res.status(200).json(recentUsers);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
   }

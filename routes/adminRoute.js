@@ -9,11 +9,7 @@ router.get(
   authMiddleware.verifyToken,
   adminController.checkAdmin
 );
-router.get(
-  "/getRecentUser",
-  authMiddleware.verifyToken,
-  adminController.getRecentUsers
-);
+
 router.get(
   "/getAllUsers",
   authMiddleware.verifyToken,
