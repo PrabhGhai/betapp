@@ -15,4 +15,11 @@ router.get(
   authMiddleware.verifyToken,
   adminController.getUsersInChunks
 );
+
+// Route to get all deposit requests Manual
+router.get(
+  "/getAllDepositsRequest",
+  authMiddleware.verifyToken, // Ensure only authenticated users can access
+  adminController.getAllDepositRequests
+);
 module.exports = router;

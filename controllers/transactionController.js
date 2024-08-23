@@ -34,6 +34,7 @@ exports.manualTransaction = async (req, res) => {
       amount,
       screenshot,
       user: user.id,
+      transactionType: "Deposit",
     });
 
     await newTransaction.save();

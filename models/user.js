@@ -107,6 +107,8 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    ipAddress: { type: String, required: false },
+    signInHistory: [{ type: Date }],
   },
   { timestamps: true }
 );

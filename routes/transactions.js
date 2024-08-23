@@ -11,4 +11,5 @@ router.post(
   uploadScreenshots.single("screenshot"),
   transactionController.manualTransaction
 );
+
 module.exports = router;

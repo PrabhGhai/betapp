@@ -3,14 +3,16 @@ const Schema = mongoose.Schema;
 
 const transactionSchema = new Schema(
   {
+    transactionType: {
+      type: String,
+      enum: ["Deposit", "Withdrawl"],
+    },
     transactionId: {
       type: String,
-      required: true,
     },
     type: {
       type: String,
       enum: ["manual"],
-      required: true,
     },
     amount: {
       type: Number,
@@ -18,15 +20,15 @@ const transactionSchema = new Schema(
     },
     screenshot: {
       type: String,
-      required: true,
     },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },
-    success: {
-      type: Boolean,
-      deafult: false,
+    status: {
+      type: String,
+      deafult: "In Process",
+      enum: ["In Process", "Approved", "Declined"],
     },
     createdAt: {
       type: Date,

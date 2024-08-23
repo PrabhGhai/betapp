@@ -10,17 +10,24 @@ let otpStorage = {};
 exports.requestOtp = async (req, res) => {
   const { username, email, password, mobileNumber } = req.body;
 
+  if (!username || !email || !password || !mobileNumber) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
   // Validate input
   if (username.length < 5)
     return res
       .status(400)
       .json({ error: "Username must be at least 5 characters long." });
+
   if (password.length < 6)
     return res
       .status(400)
       .json({ error: "Password must be at least 6 characters long." });
+
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
     return res.status(400).json({ error: "Invalid email address." });
+
   if (mobileNumber && mobileNumber.length !== 10)
     return res
       .status(400)
@@ -115,6 +122,18 @@ exports.login = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
+
+    // Capture the user's IP address
+    const ipAddress =
+      req.headers["x-forwarded-for"] || req.socket.remoteAddress;
+
+    // Update user's IP address on login
+    existingUser.ipAddress = ipAddress;
+
+    // Add the current date to the beginning of the signInHistory array
+    existingUser.signInHistory.unshift(new Date());
+
+    await existingUser.save();
 
     // Generate JWT token
     const id = existingUser._id;

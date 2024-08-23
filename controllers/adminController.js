@@ -1,4 +1,5 @@
 const User = require("../models/user");
+const Transactions = require("../models/transaction");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs"); // Assuming bcrypt for password hashing
 
@@ -76,5 +77,22 @@ exports.getUsersInChunks = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+// Get all deposit requests and populate user
+exports.getAllDepositRequests = async (req, res) => {
+  try {
+    const deposits = await Transactions.find({
+      type: "manual",
+      status: "In Process",
+      transactionType: "Deposit",
+    })
+      .populate("user") // Adjust fields as needed
+      .sort({ createdAt: -1 }); // Sorting by most recent
+
+    res.status(200).json(deposits);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
