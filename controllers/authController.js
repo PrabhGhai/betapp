@@ -103,6 +103,9 @@ exports.login = async (req, res) => {
       return res.status(400).json({ error: "All fields are required" });
     }
     const existingUser = await User.findOne({ email: email });
+    if (existingUser.suspend === true) {
+      return res.status(400).json({ error: "Your account is blocked" });
+    }
     if (!existingUser) {
       return res.status(400).json({ error: "Invalid Credentials" });
     }

@@ -85,31 +85,11 @@ const userSchema = new Schema(
         default: 0,
       },
     },
-    transactions: [
-      {
-        transactionId: {
-          type: String,
-          required: true,
-        },
-        type: {
-          type: String,
-          enum: ["credit", "debit"],
-          required: true,
-        },
-        amount: {
-          type: Number,
-          required: true,
-        },
-        description: {
-          type: String,
-          required: false,
-        },
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
+    spent: {
+      type: Number,
+      default: 0,
+    },
+    transactions: [{ type: Schema.Types.ObjectId, ref: "Transactions" }],
     role: {
       type: String,
       enum: ["admin", "user"],
@@ -122,6 +102,10 @@ const userSchema = new Schema(
     resetPasswordExpires: {
       type: Date,
       required: false,
+    },
+    suspend: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

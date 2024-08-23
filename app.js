@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const userApi = require("./routes/user");
 const adminApi = require("./routes/adminRoute");
+const transactionApi = require("./routes/transactions");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
@@ -27,6 +28,7 @@ app.use(
 // API routes
 app.use("/api/v1", userApi);
 app.use("/api/v1", adminApi);
+app.use("/api/v1", transactionApi);
 
 // Handle preflight requests
 app.options("*", cors());
