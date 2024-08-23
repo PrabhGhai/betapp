@@ -152,7 +152,7 @@ exports.login = async (req, res) => {
     res.cookie("betAppUserToken", token, {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      secure: process.env.NODE_ENV === "production", // Cookie is only sent over HTTPS in production
+      secure: true,
       sameSite: "None",
     });
 

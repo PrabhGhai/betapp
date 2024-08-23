@@ -27,7 +27,7 @@ const transactionSchema = new Schema(
     },
     status: {
       type: String,
-      deafult: "In Process",
+      default: "In Process",
       enum: ["In Process", "Approved", "Declined"],
     },
     createdAt: {

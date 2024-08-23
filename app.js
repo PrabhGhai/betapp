@@ -22,6 +22,9 @@ app.use(
   })
 );
 
+// Handle preflight requests
+app.options("*", cors());
+
 // Serve static files if needed
 // app.use("/uploads", express.static("uploads"));
 
@@ -29,9 +32,6 @@ app.use(
 app.use("/api/v1", userApi);
 app.use("/api/v1", adminApi);
 app.use("/api/v1", transactionApi);
-
-// Handle preflight requests
-app.options("*", cors());
 
 // Start the server
 app.listen(process.env.PORT, () => {

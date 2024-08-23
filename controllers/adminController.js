@@ -96,3 +96,20 @@ exports.getAllDepositRequests = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+//get all transactions
+exports.getAllTransactions = async (req, res) => {
+  try {
+    const transactions = await Transactions.find()
+      .populate("user", "-password") // Populate user data excluding the password
+      .sort({ createdAt: -1 }); // Sort by most recent
+
+    res.status(200).json(transactions);
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch transactions",
+      error: error.message,
+    });
+  }
+};

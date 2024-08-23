@@ -22,4 +22,11 @@ router.get(
   authMiddleware.verifyToken, // Ensure only authenticated users can access
   adminController.getAllDepositRequests
 );
+
+//get all transactions
+router.get(
+  "/getAllTransactions",
+  authMiddleware.verifyToken, // Ensure only authenticated users can access
+  adminController.getAllTransactions
+);
 module.exports = router;
