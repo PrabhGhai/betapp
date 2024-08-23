@@ -124,11 +124,14 @@ exports.login = async (req, res) => {
     }
 
     // Capture the user's IP address
-    const ipAddress =
+    const newipAddress =
       req.headers["x-forwarded-for"] || req.socket.remoteAddress;
 
-    // Update user's IP address on login
-    existingUser.ipAddress = ipAddress;
+    // Clear the previous IP address by setting it to an empty string
+    existingUser.ipAddress = "";
+
+    // Update with the new IP address
+    existingUser.ipAddress = newipAddress;
 
     // Add the current date to the beginning of the signInHistory array
     existingUser.signInHistory.unshift(new Date());
