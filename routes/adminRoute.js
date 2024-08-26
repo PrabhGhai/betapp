@@ -43,4 +43,24 @@ router.patch(
   authMiddleware.verifyToken, // Ensure only authenticated users can access
   adminController.declineDepositRequest
 );
+
+//all in process withdrawl requests
+router.get(
+  "/getAllWithdrawlRequests",
+  authMiddleware.verifyToken, // Ensure only authenticated users can access
+  adminController.getAllWithdrawlRequests
+);
+
+//all in process withdrawl requests
+router.patch(
+  "/approveWithdrawRequest/:transactionObjId",
+  authMiddleware.verifyToken, // Ensure only authenticated users can access
+  adminController.approveWithdrawRequest
+);
+
+router.patch(
+  "/declineWithdrawRequest/:transactionObjId",
+  authMiddleware.verifyToken, // Ensure only authenticated users can access
+  adminController.declineWithdrawRequest
+);
 module.exports = router;

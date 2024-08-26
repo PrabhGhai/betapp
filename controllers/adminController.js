@@ -2,7 +2,7 @@ const User = require("../models/user");
 const Transactions = require("../models/transaction");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs"); // Assuming bcrypt for password hashing
-
+const AdminAmount = require("../models/adminAmount");
 // Admin login controller
 exports.adminLogin = async (req, res) => {
   const { email, password } = req.body;
@@ -133,6 +133,19 @@ exports.approveDepositRequest = async (req, res) => {
     user.wallet.balance = (user.wallet.balance || 0) + transaction.amount;
     await user.save();
 
+    const adminAmount = await AdminAmount.findOne(); // Assumes single document
+    if (adminAmount) {
+      adminAmount.totalAmount += transaction.amount;
+      adminAmount.currentAmount += transaction.amount;
+      await adminAmount.save();
+    } else {
+      // Create if it doesn't exist
+      await AdminAmount.create({
+        totalAmount: transaction.amount,
+        currentAmount: transaction.amount,
+      });
+    }
+
     res.status(200).json({
       message:
         "Transaction approved and user wallet balance updated successfully",
@@ -166,6 +179,112 @@ exports.declineDepositRequest = async (req, res) => {
     res.status(200).json({ message: "Transaction declined successfully" });
   } catch (error) {
     console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Get all withdrwal requests and populate user
+exports.getAllWithdrawlRequests = async (req, res) => {
+  try {
+    const withdrawals = await Transactions.find({
+      status: "In Process",
+      transactionType: "Withdrawal",
+    })
+      .populate("user") // Adjust fields as needed
+      .sort({ createdAt: -1 }); // Sorting by most recent
+
+    res.status(200).json(withdrawals);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Approve a withdraw request
+exports.approveWithdrawRequest = async (req, res) => {
+  const { transactionObjId } = req.params;
+  const { transactionId } = req.body;
+
+  try {
+    // Find the transaction and populate the user details
+    const transaction = await Transactions.findById(transactionObjId).populate(
+      "user"
+    );
+
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found" });
+    }
+
+    // Check if the transaction is in "In Process" state
+    if (transaction.status !== "In Process") {
+      return res
+        .status(400)
+        .json({ message: "Transaction is not in 'In Process' state" });
+    }
+
+    // Update the transaction status to "Approved"
+    transaction.status = "Approved";
+    transaction.transactionId = transactionId;
+    await transaction.save();
+    const adminAmount = await AdminAmount.findOne();
+    adminAmount.currentAmount -= transaction.amount;
+    await adminAmount.save();
+    res.status(200).json({
+      message: "Transaction approved ",
+    });
+  } catch (error) {
+    // console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Decline a withdrw request
+exports.declineWithdrawRequest = async (req, res) => {
+  const { transactionObjId } = req.params;
+
+  try {
+    // Find the transaction and populate the user field
+    const transaction = await Transactions.findById(transactionObjId).populate(
+      "user"
+    );
+
+    // Check if the transaction exists
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found" });
+    }
+
+    // Check if the transaction is in the 'In Process' state
+    if (transaction.status !== "In Process") {
+      return res
+        .status(400)
+        .json({ message: "Transaction is not in 'In Process' state" });
+    }
+
+    // Update the transaction status to 'Declined'
+    transaction.status = "Declined";
+
+    // Save the updated transaction
+    await transaction.save();
+
+    // Find the user and update the wallet balance
+    const user = transaction.user;
+    if (user) {
+      user.wallet.balance += transaction.amount;
+
+      // Save the updated user
+      await user.save();
+    } else {
+      return res
+        .status(500)
+        .json({ message: "User associated with the transaction not found" });
+    }
+
+    // Send a successful response
+    res
+      .status(200)
+      .json({ message: "Transaction declined and user balance updated" });
+  } catch (error) {
+    // Log and respond with an error message
+    console.error("Error declining transaction:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
