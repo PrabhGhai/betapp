@@ -49,3 +49,87 @@ exports.manualTransaction = async (req, res) => {
     return res.status(500).json({ error: "Server error" });
   }
 };
+
+// Get Payment History of User
+exports.getUserPaymentHistory = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const transactions = await Transaction.find({ user: userId })
+      .select("-screenshot")
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      transactions,
+    });
+  } catch (error) {
+    console.error("Error fetching payment history:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch payment history",
+    });
+  }
+};
+
+//withdraw amount request by user
+exports.withdrawAmountRequest = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { amount } = req.body;
+
+    // Validate the amount
+    if (!amount) {
+      return res.status(400).json({ error: "Please enter the amount." });
+    }
+
+    const existingUser = await User.findById(userId);
+
+    // Check if the user has provided bank details or UPI ID
+    if (!existingUser.bankAccountDetails && !existingUser.upiId) {
+      return res
+        .status(400)
+        .json({ error: "Please fill in your bank details or UPI ID." });
+    }
+
+    // Check if the user's wallet balance is sufficient
+    if (existingUser.wallet.balance < 300) {
+      return res
+        .status(400)
+        .json({ error: "Your wallet balance is less than 300." });
+    }
+
+    // Check if the withdrawal amount is valid
+    if (amount < 300) {
+      return res
+        .status(400)
+        .json({ error: "The amount should be at least 300." });
+    }
+
+    // Deduct the amount and save the transaction
+    const withdrawTransaction = new Transaction({
+      transactionType: "Withdrawal",
+      type: "manual",
+      amount,
+      user: userId,
+    });
+
+    await withdrawTransaction.save();
+
+    // Update user's transactions and wallet balance
+    existingUser.transactions.push(withdrawTransaction._id);
+    existingUser.wallet.balance -= amount;
+    await existingUser.save();
+
+    // Send success response
+    res.status(200).json({
+      success: true,
+      message: "Your withdrawal request is being processed.",
+    });
+  } catch (error) {
+    console.error("Error during withdrawal request:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to process the withdrawal request.",
+    });
+  }
+};

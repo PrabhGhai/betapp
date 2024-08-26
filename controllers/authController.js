@@ -4,6 +4,7 @@ const User = require("../models/user");
 const crypto = require("crypto");
 const sendEmail = require("../utils/sendEmail");
 const { generateOtp, sendOtp } = require("../utils/otp");
+const Transactions = require("../models/transaction");
 
 let otpStorage = {};
 

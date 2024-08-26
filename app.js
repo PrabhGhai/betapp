@@ -16,8 +16,8 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: ["http://localhost:5173", "https://betwebapp.netlify.app"],
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Specify allowed methods
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"], // Specify allowed headers
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"], // Specify allowed methods
+    //allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"], // Specify allowed headers
     credentials: true, // Allow cookies to be sent
   })
 );

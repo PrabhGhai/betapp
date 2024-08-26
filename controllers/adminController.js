@@ -97,6 +97,79 @@ exports.getAllDepositRequests = async (req, res) => {
   }
 };
 
+// Approve a deposit request
+exports.approveDepositRequest = async (req, res) => {
+  const { transactionId } = req.params;
+
+  try {
+    // Find the transaction and populate the user details
+    const transaction = await Transactions.findById(transactionId).populate(
+      "user"
+    );
+
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found" });
+    }
+
+    // Check if the transaction is in "In Process" state
+    if (transaction.status !== "In Process") {
+      return res
+        .status(400)
+        .json({ message: "Transaction is not in 'In Process' state" });
+    }
+
+    // Update the transaction status to "Approved"
+    transaction.status = "Approved";
+    await transaction.save();
+
+    // Find the user associated with this transaction
+    const user = transaction.user;
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Increment the user's wallet balance
+    user.wallet.balance = (user.wallet.balance || 0) + transaction.amount;
+    await user.save();
+
+    res.status(200).json({
+      message:
+        "Transaction approved and user wallet balance updated successfully",
+    });
+  } catch (error) {
+    // console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Decline a deposit request
+exports.declineDepositRequest = async (req, res) => {
+  const { transactionId } = req.params;
+
+  try {
+    const transaction = await Transactions.findById(transactionId);
+
+    if (!transaction) {
+      return res.status(404).json({ message: "Transaction not found" });
+    }
+
+    if (transaction.status !== "In Process") {
+      return res
+        .status(400)
+        .json({ message: "Transaction is not in 'In Process' state" });
+    }
+
+    transaction.status = "Declined";
+    await transaction.save();
+
+    res.status(200).json({ message: "Transaction declined successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
 //get all transactions
 exports.getAllTransactions = async (req, res) => {
   try {

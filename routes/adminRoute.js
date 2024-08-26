@@ -29,4 +29,18 @@ router.get(
   authMiddleware.verifyToken, // Ensure only authenticated users can access
   adminController.getAllTransactions
 );
+
+// Approve a deposit request
+router.patch(
+  "/approveDepositRequest/:transactionId",
+  authMiddleware.verifyToken, // Ensure only authenticated users can access
+  adminController.approveDepositRequest
+);
+
+// Decline a deposit request
+router.patch(
+  "/declineDepositRequest/:transactionId",
+  authMiddleware.verifyToken, // Ensure only authenticated users can access
+  adminController.declineDepositRequest
+);
 module.exports = router;

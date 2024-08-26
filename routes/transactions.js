@@ -12,4 +12,15 @@ router.post(
   transactionController.manualTransaction
 );
 
+router.get(
+  "/getUserPaymentHistory",
+  authMiddleware.verifyToken,
+  transactionController.getUserPaymentHistory
+);
+
+router.patch(
+  "/withdrawAmountRequest",
+  authMiddleware.verifyToken,
+  transactionController.withdrawAmountRequest
+);
 module.exports = router;
