@@ -155,7 +155,7 @@ exports.login = async (req, res) => {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       secure: true,
       sameSite: "None",
-      domain: "https://betwebapp.netlify.app", // Replace with your actual frontend domain
+      domain: ".netlify.app", // Replace with your actual frontend domain
     });
 
     return res.status(200).json({
