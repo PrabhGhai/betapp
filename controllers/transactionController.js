@@ -105,6 +105,15 @@ exports.withdrawAmountRequest = async (req, res) => {
         .json({ error: "The amount should be at least 300." });
     }
 
+    // Check if the user's wallet balance is less than the amount he or she wants to withdraw
+    if (existingUser.wallet.balance < amount) {
+      return res
+        .status(400)
+        .json({
+          error: "Your balance is less than the amount you want to withdraw",
+        });
+    }
+
     // Deduct the amount and save the transaction
     const withdrawTransaction = new Transaction({
       transactionType: "Withdrawal",

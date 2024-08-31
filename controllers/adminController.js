@@ -3,6 +3,7 @@ const Transactions = require("../models/transaction");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs"); // Assuming bcrypt for password hashing
 const AdminAmount = require("../models/adminAmount");
+const Banner = require("../models/banner");
 // Admin login controller
 exports.adminLogin = async (req, res) => {
   const { email, password } = req.body;
@@ -289,18 +290,131 @@ exports.declineWithdrawRequest = async (req, res) => {
   }
 };
 
-//get all transactions
+// Get all transactions with pagination
 exports.getAllTransactions = async (req, res) => {
   try {
+    const { page = 1, limit = 10 } = req.query;
+    // Fetch transactions with pagination
     const transactions = await Transactions.find()
       .populate("user", "-password") // Populate user data excluding the password
-      .sort({ createdAt: -1 }); // Sort by most recent
+      .sort({ createdAt: -1 }) // Sort by most recent
+      .skip((page - 1) * limit) // Skip the records for pagination
+      .limit(parseInt(limit)); // Limit the number of records per page
 
-    res.status(200).json(transactions);
+    // Get the total count for pagination
+    const totalTransactions = await Transactions.countDocuments();
+
+    res.status(200).json({
+      transactions,
+      currentPage: parseInt(page),
+      totalPages: Math.ceil(totalTransactions / limit),
+      totalTransactions,
+    });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: "Failed to fetch transactions",
+      error: error.message,
+    });
+  }
+};
+
+//--------------------------------------------------- DASHBOARD-----------------------------------------------------------------
+
+exports.getDashboardMoneyAnalytics = async (req, res) => {
+  try {
+    const analytics = await AdminAmount.findOne();
+    res.status(200).json({ success: true, analytics });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch data",
+      error: error.message,
+    });
+  }
+};
+
+//----------------------------------------------------Banner--------------------------------------------
+
+//get banners
+exports.getbanners = async (req, res) => {
+  try {
+    const bannersURL = await Banner.findOne();
+    const banners = bannersURL.bannerImg;
+    res.status(200).json({ success: true, banners });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch banners",
+      error: error.message,
+    });
+  }
+};
+
+// adding banners
+exports.addBanner = async (req, res) => {
+  try {
+    const { bannerImg } = req.body;
+    const banners = await Banner.findOne();
+    banners.bannerImg.push(bannerImg);
+    await banners.save();
+    res
+      .status(200)
+      .json({ success: true, message: "Image added successfully" });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch data",
+      error: error.message,
+    });
+  }
+};
+
+//updating Banners
+
+exports.updateBannerImages = async (req, res) => {
+  try {
+    const images = req.files; // New images uploaded via Multer
+    const alreadyExistingBanners = req.body.banners; // Existing banners from the frontend (URLs)
+
+    let bannerDoc = await Banner.findOne(); // Find the existing banner document
+
+    if (!bannerDoc) {
+      // If no document exists, create a new one
+      bannerDoc = new Banner();
+    }
+
+    // Clear the existing images
+    bannerDoc.bannerImg = [];
+
+    // Add already existing banners from the frontend if they exist
+    if (alreadyExistingBanners && alreadyExistingBanners.length > 0) {
+      bannerDoc.bannerImg.push(...alreadyExistingBanners);
+    }
+
+    // Add new images if they exist
+    if (images && images.length > 0) {
+      images.forEach((item) => {
+        bannerDoc.bannerImg.push(item.path);
+      });
+    }
+
+    // Ensure there are at least 3 images before saving
+    if (bannerDoc.bannerImg.length < 3) {
+      return res.status(400).json({
+        message: "At least 3 images are required",
+      });
+    }
+
+    // Save the updated banner document
+    await bannerDoc.save();
+
+    res.status(200).json({
+      message: "Banner images updated successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to update banner images",
       error: error.message,
     });
   }
